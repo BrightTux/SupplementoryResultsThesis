@@ -78,6 +78,19 @@ def chamferDistance(gt, q):
             min_y.append(abs(o[1] - i[1]))
             min_t.append(abs(oidx - iidx))
 
-        for k in min_x:
+        for k in len(min_x):
+            sum.append(min_x[k] + min_y[k] + min_t[k])
+
+        indexOfMin = sum.indexOf(Math.min(...sum))
+
+        if(currentIndexOfMin == 0):
+            ModifiedMinValue = Math.min(...sum)
+        elif(currentIndexOfMin != 0 && indexOfMin == currentIndexOfMin):
+            ModifiedMinValue = Math.min(...sum)
+            ModifiedMinValue++
+
+        maxDifference = maxDifference + ModifiedMinValue
+        min_x = [], min_y = [] , min_o = [], sum = []
+                                                                    }
 
 
