@@ -61,6 +61,17 @@ groundtruths = [gt1,gt2,gt3,gt4,gt5,gt6,gt7,gt8,gt9,gt10,gt11]
 
 
 def chamferDistance(gt, q):
+
+    min_x =[]
+    min_y = []
+    min_t = []
+    tsum=[]
+    currentIndexOfMin = 0
+    maxDifference = 0
+
+    #print(gt)
+    #print(q)
+
     if(len(gt) >= len(q)):
        outerloop = len(gt)
        innerloop = len(q)
@@ -74,23 +85,37 @@ def chamferDistance(gt, q):
 
     for oidx, o in enumerate(outer):
         for iidx, i in enumerate(inner):
-            min_x.append(abs(o[0] - i[0]))
-            min_y.append(abs(o[1] - i[1]))
+            print('-----------------------------------------------------------')
+            print(o)
+            print(i)
+
+            min_x.append(abs(o[0][0] - i[0][0]))
+            min_y.append(abs(o[0][1] - i[0][1]))
             min_t.append(abs(oidx - iidx))
 
-        for k in len(min_x):
-            sum.append(min_x[k] + min_y[k] + min_t[k])
+        for k, val in enumerate(min_x):
+            tsum.append(min_x[k] + min_y[k] + min_t[k])
 
-        indexOfMin = sum.indexOf(Math.min(...sum))
+        indexOfMin = min(xrange(len(tsum)), key=tsum.__getitem__)
 
         if(currentIndexOfMin == 0):
-            ModifiedMinValue = Math.min(...sum)
-        elif(currentIndexOfMin != 0 && indexOfMin == currentIndexOfMin):
-            ModifiedMinValue = Math.min(...sum)
-            ModifiedMinValue++
+            ModifiedMinValue = min(tsum)
+        elif(currentIndexOfMin != 0 and indexOfMin == currentIndexOfMin):
+            ModifiedMinValue = min(tsum)
+            currentIndexOfMin = currentIndexOfMin + 1
 
         maxDifference = maxDifference + ModifiedMinValue
-        min_x = [], min_y = [] , min_o = [], sum = []
-                                                                    }
+        min_x = []
+        min_y = []
+        min_o = []
+        tsum = []
+
+    cDistance = round(((pow(maxDifference,2))/outerloop)*100)/100
+
+    curveAdjuster = 300
+    similarityScore = round((1-((cDistance)/(cDistance + curveAdjuster)))*100)
+
+    print("similarity score: ", similarityScore)
 
 
+chamferDistance(groundtruths,queries)
