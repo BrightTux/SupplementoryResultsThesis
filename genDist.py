@@ -2,9 +2,14 @@ import time
 #import statements
 import numpy as np
 from dtw import dtw
+import timeit
+from sklearn.metrics.pairwise import euclidean_distances
+from math import isinf
+from scipy.spatial.distance import cdist
+from numpy import array, zeros, full, argmin, inf, ndim
+from nltk.metrics.distance import edit_distance
 
-x = np.array([2, 0, 1, 1, 2, 4, 2, 1, 2, 0]).reshape(-1, 1)
-print(x)
+
 
 #list of trajectories for both gt and query [x,y]
 
@@ -29,28 +34,30 @@ gt1=[(15,7),(15,8),(16,9),(16,10),(17,12),(17,13),(16,12),(15,14),(15,13),(14,11
 groundtruths = [gt1]
 # ----------------------------------------------- E N D   O F   G R O U N D T R U T H S -------------------------------------------------------------
 
-final_cham=[]
 
 
 def dtwFunction(gt,q):
+    w = inf
+    s = 1.0
 
     x=[(15,7),(15,8),(16,9),(16,10),(17,12),(17,13),(16,12),(15,14),(15,13),(14,11),(12,10),(12,12),(11,11),(10,12),(9,11)]
 
 
     y=[(16,6),(16,7),(16,8),(17,9),(17,10),(17,11),(17,12),(17,13),(17,14),(17,15),(17,16),(18,17),(18,18),(16,18),(15,18),(14,18),(13,18),(12,18),(11,18),(10,18),(9,18),(9,17),(8,17),(7,17)]
 
+    dist_fun = edit_distance
 
-    euclidean_norm = lambda x, y: np.abs(x - y)
-    d, cost_matrix, acc_cost_matrix, path = dtw(x, y, dist=euclidean_norm)
+    dist, cost, acc, path = dtw(x, y, dist_fun, w=w, s=s)
 
-    print(d)
-
-
+    print(dist, cost, acc, path)
 
 
 
-def chamferDistance2(gt, q):
 
+
+def chamferDistance2(gt, q, alpha):
+
+    final_cham=[]
     min_x =[]
     min_y = []
     min_t = []
@@ -58,9 +65,9 @@ def chamferDistance2(gt, q):
     currentIndexOfMin = 0
     maxDifference = 0
 
-    print("length of gt: ", len(gt))
-    print("length of q : ", len(q))
-    print("Query will always be longer than gt. 5 test case, 1 GT")
+    #print("length of gt: ", len(gt))
+    #print("length of q : ", len(q))
+    #print("Query will always be longer than gt. 5 test case, 1 GT")
 
     for indq, val in enumerate(q):
 
@@ -105,7 +112,7 @@ def chamferDistance2(gt, q):
         cDistance = round(((pow(maxDifference,2))/outerloop)*100.0)/100.0
 
 
-        curveAdjuster = 300
+        curveAdjuster = alpha
         similarityScore = round((1.0-((cDistance)/(cDistance + curveAdjuster)))*100.0)
 
     #print("similarity score: ", similarityScore)
@@ -113,8 +120,8 @@ def chamferDistance2(gt, q):
     #time.sleep( 2 )
 
     #print('***************************************')
-        print("Similarity score: ", similarityScore)
-        print("cDistance:        ", cDistance)
+       # print("Similarity score: ", similarityScore)
+       # print("cDistance:        ", cDistance)
         final_cham.append([similarityScore, cDistance])
 
     return final_cham
@@ -127,7 +134,19 @@ eucl = []
 earthm = []
 hausdrorff = []
 
+start = timeit.default_timer()
+print("100 Similarity Score, ChamferDistance:", chamferDistance2(groundtruths, queries, 100))
+stop = timeit.default_timer()
+print('Time: ', stop - start)
+print("200 Similarity Score, ChamferDistance:", chamferDistance2(groundtruths, queries, 200))
+print("300 Similarity Score, ChamferDistance:", chamferDistance2(groundtruths, queries, 300))
+print("400 Similarity Score, ChamferDistance:", chamferDistance2(groundtruths, queries, 400))
+print("500 Similarity Score, ChamferDistance:", chamferDistance2(groundtruths, queries, 500))
+print("600 Similarity Score, ChamferDistance:", chamferDistance2(groundtruths, queries, 600))
+print("700 Similarity Score, ChamferDistance:", chamferDistance2(groundtruths, queries, 700))
+print("800 Similarity Score, ChamferDistance:", chamferDistance2(groundtruths, queries, 800))
+print("900 Similarity Score, ChamferDistance:", chamferDistance2(groundtruths, queries, 900))
+print("1000 Similarity Score, ChamferDistance:", chamferDistance2(groundtruths, queries, 1000))
 
-print(chamferDistance2(groundtruths, queries))
 dtwFunction(groundtruths, queries)
 #https://stackoverflow.com/questions/30706079/hausdorff-distance-between-3d-grids
