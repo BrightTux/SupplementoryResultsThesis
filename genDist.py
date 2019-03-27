@@ -1,3 +1,4 @@
+#!/c/Users/Clarence/Miniconda3/python
 import time
 #import statements
 import numpy as np
@@ -8,6 +9,8 @@ from math import isinf
 from scipy.spatial.distance import cdist
 from numpy import array, zeros, full, argmin, inf, ndim
 from nltk.metrics.distance import edit_distance
+from scipy.spatial.distance import directed_hausdorff
+
 
 
 
@@ -36,23 +39,35 @@ groundtruths = [gt1]
 
 
 
-def dtwFunction(gt,q):
-    w = inf
-    s = 1.0
+def dtwFunction(gt,q, dist_fun):
 
-    x=[(15,7),(15,8),(16,9),(16,10),(17,12),(17,13),(16,12),(15,14),(15,13),(14,11),(12,10),(12,12),(11,11),(10,12),(9,11)]
+    for indgt, valgt in enumerate(gt):
+        for indq, valq in enumerate(q):
+            w = inf
+            s = 1.0
+
+            x = valgt
+            y = valq
+
+            #dist_fun = edit_distance
+
+            dist, cost, acc, path = dtw(x, y, dist_fun, w=w, s=s)
+
+            print("Dist: ", 1 - dist)
 
 
-    y=[(16,6),(16,7),(16,8),(17,9),(17,10),(17,11),(17,12),(17,13),(17,14),(17,15),(17,16),(18,17),(18,18),(16,18),(15,18),(14,18),(13,18),(12,18),(11,18),(10,18),(9,18),(9,17),(8,17),(7,17)]
 
-    dist_fun = edit_distance
+def hausFunction(gt,q):
 
-    dist, cost, acc, path = dtw(x, y, dist_fun, w=w, s=s)
+    for indgt, valgt in enumerate(gt):
+        for indq, valq in enumerate(q):
+            w = inf
+            s = 1.0
 
-    print(dist, cost, acc, path)
+            x = valgt
+            y = valq
 
-
-
+            print("hausdorff distance: ", directed_hausdorff(x, y)[0])
 
 
 def chamferDistance2(gt, q, alpha):
@@ -134,10 +149,10 @@ eucl = []
 earthm = []
 hausdrorff = []
 
-start = timeit.default_timer()
+#start = timeit.default_timer()
 print("100 Similarity Score, ChamferDistance:", chamferDistance2(groundtruths, queries, 100))
-stop = timeit.default_timer()
-print('Time: ', stop - start)
+#stop = timeit.default_timer()
+#print('Time: ', stop - start)
 print("200 Similarity Score, ChamferDistance:", chamferDistance2(groundtruths, queries, 200))
 print("300 Similarity Score, ChamferDistance:", chamferDistance2(groundtruths, queries, 300))
 print("400 Similarity Score, ChamferDistance:", chamferDistance2(groundtruths, queries, 400))
@@ -148,5 +163,6 @@ print("800 Similarity Score, ChamferDistance:", chamferDistance2(groundtruths, q
 print("900 Similarity Score, ChamferDistance:", chamferDistance2(groundtruths, queries, 900))
 print("1000 Similarity Score, ChamferDistance:", chamferDistance2(groundtruths, queries, 1000))
 
-dtwFunction(groundtruths, queries)
+dtwFunction(groundtruths, queries, edit_distance)
+hausFunction(groundtruths, queries)
 #https://stackoverflow.com/questions/30706079/hausdorff-distance-between-3d-grids
