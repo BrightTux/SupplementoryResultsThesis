@@ -53,7 +53,7 @@ def dtwFunction(gt,q, dist_fun):
 
             dist, cost, acc, path = dtw(x, y, dist_fun, w=w, s=s)
 
-            print("Dist: ", 1 - dist)
+            print("dtw Dist, using edit_distance : ", 1 - dist)
 
 
 
@@ -61,14 +61,14 @@ def hausFunction(gt,q):
 
     for indgt, valgt in enumerate(gt):
         for indq, valq in enumerate(q):
-            w = inf
-            s = 1.0
-
             x = valgt
             y = valq
 
-            print("hausdorff distance: ", directed_hausdorff(x, y)[0])
+            #print("hausdorff distance: ", directed_hausdorff(x, y)[0])
+            #print("hausdorff distance: ", directed_hausdorff(y, x)[0])
+            #print("---")
 
+            print("hausdorff distance: ", max((directed_hausdorff(x, y)[0]),(directed_hausdorff(y,x)[0])))
 
 def chamferDistance2(gt, q, alpha):
 
