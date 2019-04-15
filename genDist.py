@@ -10,6 +10,7 @@ from scipy.spatial.distance import cdist
 from numpy import array, zeros, full, argmin, inf, ndim
 from nltk.metrics.distance import edit_distance
 from scipy.spatial.distance import directed_hausdorff
+import cv2
 
 
 
@@ -37,7 +38,32 @@ gt1=[(15,7),(15,8),(16,9),(16,10),(17,12),(17,13),(16,12),(15,14),(15,13),(14,11
 groundtruths = [gt1]
 # ----------------------------------------------- E N D   O F   G R O U N D T R U T H S -------------------------------------------------------------
 
+def img_to_sig(arr):
+    """Convert a 2D array to a signature for cv2.EMD"""
+    # cv2.EMD requires single-precision, floating-point input
+    sig = np.empty((arr.size, 3), dtype=np.float32)
+    count = 0
+    for i in range(arr.shape[0]):
+        for j in range(arr.shape[1]):
+            sig[count] = np.array([arr[i,j], i, j])
+            count += 1
+    return sig
 
+
+def emdFunction(gt,q):
+    for indgt, valgt in enumerate(gt):
+        for indq, valq in enumerate(q):
+
+            x = img_to_sig(np.array(valgt))
+            y = img_to_sig(np.array(valq))
+
+            #dist, _, flow = cv2.EMD(x, y, cv2.DIST_L2)
+            distl1, _, flow = cv2.EMD(x,y,cv2.DIST_L1)
+            distl2, _, flow = cv2.EMD(x,y,cv2.DIST_L2)
+            distc, _, flow = cv2.EMD(x,y,cv2.DIST_C)
+
+
+            print("emd Dist: ", distl1, distl2, distc)
 
 def dtwFunction(gt,q, dist_fun):
 
@@ -48,6 +74,8 @@ def dtwFunction(gt,q, dist_fun):
 
             x = valgt
             y = valq
+            x = img_to_sig(np.array(valgt))
+            y = img_to_sig(np.array(valq))
 
             #dist_fun = edit_distance
 
@@ -165,4 +193,7 @@ print("1000 Similarity Score, ChamferDistance:", chamferDistance2(groundtruths, 
 
 dtwFunction(groundtruths, queries, edit_distance)
 hausFunction(groundtruths, queries)
+emdFunction(groundtruths, queries)
 #https://stackoverflow.com/questions/30706079/hausdorff-distance-between-3d-grids
+
+
