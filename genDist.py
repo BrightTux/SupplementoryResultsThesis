@@ -17,22 +17,29 @@ import cv2
 
 #list of trajectories for both gt and query [x,y]
 
-q1=[(16,7),(16,8),(16,9),(17,10),(17,11),(17,12),(17,13),(16,13),(15,13),(14,13),(13,13),(13,12),(12,12),(11,12),(10,11),(9,11)]
+#mirror
+q1=[(11, 7),(10, 7),(9, 7),(9, 8),(8, 8),(7, 8),(7, 9),(6, 9),(5, 9),(4, 9),(4, 10),(4, 11),(5, 11),(5, 12),(6, 12),(7, 12),(8, 12),(9, 12),(10, 12)]
 
-q2=[(17,13),(16,13),(15,13),(14,12),(13,11),(12,12),(11,12),(10,12),(9,12),(8,12),(7,12),(6,12),(5,12),(4,11),(3,11)]
+#reverse direction
+q2=[(10, 12),(11, 12),(12, 12),(13, 12),(13, 13),(14, 13),(15, 13),(16, 13),(17, 13),(17, 12),(17, 11),(17, 10),(16, 10),(16, 9),(16, 8),(16, 7),(16, 6),(15, 6),(15, 5)]
 
-q3=[(16,6),(16,7),(16,8),(16,9),(16,10),(16,11),(16,12),(16,13),(15,13),(14,13),(13,13),(13,12),(11,12),(10,12),(10,11),(9,11),(8,11),(7,11),(6,11),(5,11),(5,12),(5,13)]
+#short query
+q3=[(17, 11),(17, 12),(17, 13)]
 
-q4=[(15,4),(15,5),(15,6),(14,6),(13,6),(12,6),(11,6),(11,7),(10,7),(9,7),(9,8),(8,8),(7,8),(7,9),(6,9),(5,10),(4,10),(3,10),(2,10),(1,11),(0,11)]
+#similar to gt
+q4=[(16, 7),(16, 8),(16, 9),(16, 10),(17, 10),(17, 11),(17, 12),(17, 13),(16, 13),(15, 13),(14, 13),(13, 13),(12, 13),(11, 13)]
 
-q5=[(16,6),(16,7),(16,8),(17,9),(17,10),(17,11),(17,12),(17,13),(17,14),(17,15),(17,16),(18,17),(18,18),(16,18),(15,18),(14,18),(13,18),(12,18),(11,18),(10,18),(9,18),(9,17),(8,17),(7,17)]
+#u turn/partial match
+q5=[(10, 9),(11, 9),(12, 9),(13, 9),(14, 9),(15, 9),(16, 9),(16, 10),(17, 10),(17, 11),(17, 12),(17, 13),(16, 13),(15, 13),(14, 13),(13, 13),(12, 13),(11, 13),(10, 13)]
+
+#long, very different query
+q6=[(1, 17),(2, 17),(3, 17),(4, 17),(4, 18),(5, 18),(6, 18),(7, 18),(8, 18),(9, 18),(10, 18),(11, 18),(12, 18),(13, 18),(14, 18),(15, 18),(16, 18),(17, 18),(18, 18),(18, 17),(18, 16),(18, 15),(17, 15),(17, 14),(16, 14),(15, 13),(14, 13),(13, 13),(12, 13),(11, 13),(11, 12),(10, 12),(9, 12),(8, 12),(7, 12),(6, 12),(5, 12),(5, 11),(4, 11),(4, 10),(5, 10),(5, 9),(6, 9),(7, 9),(8, 9),(9, 9),(10, 9),(11, 9),(12, 9),(13, 9),(13, 10),(14, 10),(15, 10),(16, 10),(16, 9),(16, 8),(15, 8),(14, 8),(13, 8),(12, 8),(11, 8),(11, 7),(12, 7),(13, 7),(13, 6),(14, 6),(15, 6)]
 
 
-queries = [q1,q2,q3,q4,q5]
+queries = [q1,q2,q3,q4,q5,q6]
 # ----------------------------------------------- E N D   O F   Q U E R I E S -------------------------------------------------------------
 
-
-gt1=[(15,7),(15,8),(16,9),(16,10),(17,12),(17,13),(16,12),(15,14),(15,13),(14,11),(12,10),(12,12),(11,11),(10,12),(9,11)]
+gt1=[(16, 7),(16, 8),(16, 9),(16, 10),(16, 11),(17, 11),(17, 12),(17, 13),(16, 13),(15, 13),(14, 13),(13, 13),(12, 13),(12, 12),(11, 12),(10, 12)]
 
 
 groundtruths = [gt1]
@@ -98,21 +105,25 @@ def hausFunction(gt,q):
 
             print("hausdorff distance: ", max((directed_hausdorff(x, y)[0]),(directed_hausdorff(y,x)[0])))
 
+
+
+
+
+
+
 def chamferDistance2(gt, q, alpha):
 
     final_cham=[]
-    min_x =[]
-    min_y = []
-    min_t = []
-    tsum=[]
-    currentIndexOfMin = 0
-    maxDifference = 0
-
-    #print("length of gt: ", len(gt))
-    #print("length of q : ", len(q))
-    #print("Query will always be longer than gt. 5 test case, 1 GT")
 
     for indq, val in enumerate(q):
+
+        min_x =[]
+        min_y = []
+        min_t = []
+        tsum=[]
+        currentIndexOfMin = 0
+        maxDifference = 0
+
 
         if(len(gt[0]) >= len(q[indq])):
             outerloop = len(gt[0])
@@ -169,6 +180,39 @@ def chamferDistance2(gt, q, alpha):
 
     return final_cham
 
+def chamfer_distance_numpy(array1, array2):
+    batch_size, num_point, num_features = array1.shape
+    dist = 0
+    for i in range(batch_size):
+        av_dist1 = array2samples_distance(array1[i], array2[i])
+        av_dist2 = array2samples_distance(array2[i], array1[i])
+        dist = dist + (av_dist1+av_dist2)/batch_size
+
+    return dist
+
+def array2samples_distance(array1, array2):
+    """
+    arguments:
+        array1: the array, size: (num_point, num_feature)
+        array2: the samples, size: (num_point, num_feature)
+    returns:
+        distances: each entry is the distance from a sample to array1
+    """
+
+    num_point, num_features = array1.shape
+    expanded_array1 = np.tile(array1, (num_point, 1))
+    expanded_array2 = np.reshape(
+            np.tile(np.expand_dims(array2, 1),
+                (1, num_point, 1)),
+                (-1, num_features))
+
+    distances = LA.norm(expanded_array1-expanded_array2, axis=1)
+    distances = np.reshape(distances, (num_point, num_point))
+    distances = np.min(distances, axis=1)
+    distances = np.mean(distances)
+    return distances
+
+
 
 
 
@@ -178,6 +222,7 @@ earthm = []
 hausdrorff = []
 
 #start = timeit.default_timer()
+#print("numpy ChamferDistance:", chamfer_distance_numpy(gt1, q1))
 print("100 Similarity Score, ChamferDistance:", chamferDistance2(groundtruths, queries, 100))
 #stop = timeit.default_timer()
 #print('Time: ', stop - start)
