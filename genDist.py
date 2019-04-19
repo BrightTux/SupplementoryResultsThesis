@@ -3,10 +3,13 @@ import time
 #import statements
 import numpy as np
 from dtw import dtw
+from fastdtw import fastdtw
 import timeit
 from sklearn.metrics.pairwise import euclidean_distances
 from math import isinf
+import math
 from scipy.spatial.distance import cdist
+from scipy.spatial.distance import euclidean
 from numpy import array, zeros, full, argmin, inf, ndim
 from nltk.metrics.distance import edit_distance
 from scipy.spatial.distance import directed_hausdorff
@@ -35,8 +38,10 @@ q5=[(10, 9),(11, 9),(12, 9),(13, 9),(14, 9),(15, 9),(16, 9),(16, 10),(17, 10),(1
 #long, very different query
 q6=[(1, 17),(2, 17),(3, 17),(4, 17),(4, 18),(5, 18),(6, 18),(7, 18),(8, 18),(9, 18),(10, 18),(11, 18),(12, 18),(13, 18),(14, 18),(15, 18),(16, 18),(17, 18),(18, 18),(18, 17),(18, 16),(18, 15),(17, 15),(17, 14),(16, 14),(15, 13),(14, 13),(13, 13),(12, 13),(11, 13),(11, 12),(10, 12),(9, 12),(8, 12),(7, 12),(6, 12),(5, 12),(5, 11),(4, 11),(4, 10),(5, 10),(5, 9),(6, 9),(7, 9),(8, 9),(9, 9),(10, 9),(11, 9),(12, 9),(13, 9),(13, 10),(14, 10),(15, 10),(16, 10),(16, 9),(16, 8),(15, 8),(14, 8),(13, 8),(12, 8),(11, 8),(11, 7),(12, 7),(13, 7),(13, 6),(14, 6),(15, 6)]
 
+#similar shape
+q7=[(15, 6),(15, 7),(16, 7),(16, 8),(16, 9),(16, 10),(15, 10),(14, 10),(13, 10),(13, 9),(12, 9)]
 
-queries = [q1,q2,q3,q4,q5,q6]
+queries = [q1,q2,q3,q4,q5,q6,q7]
 # ----------------------------------------------- E N D   O F   Q U E R I E S -------------------------------------------------------------
 
 gt1=[(16, 7),(16, 8),(16, 9),(16, 10),(16, 11),(17, 11),(17, 12),(17, 13),(16, 13),(15, 13),(14, 13),(13, 13),(12, 13),(12, 12),(11, 12),(10, 12)]
@@ -60,6 +65,7 @@ def img_to_sig(arr):
 def emdFunction(gt,q):
     for indgt, valgt in enumerate(gt):
         for indq, valq in enumerate(q):
+
 
             x = img_to_sig(np.array(valgt))
             y = img_to_sig(np.array(valq))
@@ -90,6 +96,20 @@ def dtwFunction(gt,q, dist_fun):
 
             print("dtw Dist, using edit_distance : ", 1 - dist)
 
+def fastdtwFunction(gt,q):
+    for indgt, valgt in enumerate(gt):
+        for indq, valq in enumerate(q):
+
+            x = valgt
+            y = valq
+            x = img_to_sig(np.array(valgt))
+            y = img_to_sig(np.array(valq))
+
+            #dist_fun = edit_distance
+            distance, path = fastdtw(x, y, dist=euclidean)
+
+
+            print("fast dtw Dist, using euclidean distance : ", distance)
 
 
 def hausFunction(gt,q):
@@ -106,8 +126,53 @@ def hausFunction(gt,q):
             print("hausdorff distance: ", max((directed_hausdorff(x, y)[0]),(directed_hausdorff(y,x)[0])))
 
 
+def euclideanFunction(gt,q):
+    x = []
+    y = []
+    for indgt, valgt in enumerate(gt):
+        for indq, valq in enumerate(q):
+            x = valgt
+            y = valq
+
+            while (len(x[indgt]) >len(y[indq])):
+                padzero = (0,0)
+                y.append(padzero)
+
+            while(len(y[indq])>len(x[indgt])):
+                padzero=(0,0)
+                x.append(padzero)
+
+            #print(x,len(x))
+            #print(y,len(y))
+            eucl = math.sqrt(pow((x[indgt][0]-y[indq][0]),2) + pow((x[indgt][1]-y[indq][1]),2))
 
 
+            print("backpadding euclidean distance: ", eucl)
+
+
+
+def euclideanFunction2(gt,q):
+    x = []
+    y = []
+    for indgt, valgt in enumerate(gt):
+        for indq, valq in enumerate(q):
+            x = valgt
+            y = valq
+
+            while (len(x[indgt]) >len(y[indq])):
+                padzero = (0,0)
+                y.insert(0,padzero)
+
+            while(len(y[indq])>len(x[indgt])):
+                padzero=(0,0)
+                x.insert(0,padzero)
+
+            print(x,len(x))
+            print(y,len(y))
+            eucl = math.sqrt(pow((x[indgt][0]-y[indq][0]),2) + pow((x[indgt][1]-y[indq][1]),2))
+
+
+            print("front padding euclidean distance: ", eucl)
 
 
 
@@ -223,22 +288,19 @@ hausdrorff = []
 
 #start = timeit.default_timer()
 #print("numpy ChamferDistance:", chamfer_distance_numpy(gt1, q1))
-print("100 Similarity Score, ChamferDistance:", chamferDistance2(groundtruths, queries, 100))
 #stop = timeit.default_timer()
 #print('Time: ', stop - start)
-print("200 Similarity Score, ChamferDistance:", chamferDistance2(groundtruths, queries, 200))
 print("300 Similarity Score, ChamferDistance:", chamferDistance2(groundtruths, queries, 300))
-print("400 Similarity Score, ChamferDistance:", chamferDistance2(groundtruths, queries, 400))
-print("500 Similarity Score, ChamferDistance:", chamferDistance2(groundtruths, queries, 500))
-print("600 Similarity Score, ChamferDistance:", chamferDistance2(groundtruths, queries, 600))
-print("700 Similarity Score, ChamferDistance:", chamferDistance2(groundtruths, queries, 700))
-print("800 Similarity Score, ChamferDistance:", chamferDistance2(groundtruths, queries, 800))
-print("900 Similarity Score, ChamferDistance:", chamferDistance2(groundtruths, queries, 900))
-print("1000 Similarity Score, ChamferDistance:", chamferDistance2(groundtruths, queries, 1000))
 
 dtwFunction(groundtruths, queries, edit_distance)
+fastdtwFunction(groundtruths, queries)
 hausFunction(groundtruths, queries)
 emdFunction(groundtruths, queries)
+euclideanFunction(groundtruths, queries)
+#euclideanFunction2(groundtruths, queries)
 #https://stackoverflow.com/questions/30706079/hausdorff-distance-between-3d-grids
+
+
+
 
 
